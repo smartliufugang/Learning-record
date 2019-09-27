@@ -1,0 +1,145 @@
+使用观察者模式的条件
+ 对象间存在着 一对多的关系
+意图：定义对象间的一种一对多的依赖关系，当一个对象
+的状态发生改变时，所有依赖它的对象都得到的通知并被
+自动更新。
+主要解决：一个对象状态改变给其他对象通知的问题，而且
+要考虑到易用和低耦合，保证高度的写作。
+何时使用：一个对象（目标对象）的状态发生改变时，所有
+的依赖对象（观察者对象）都将得到通知，进行广播通知
+如何解决：使用面向对象技术，可以将这种依赖关系弱化
+关键代码：在抽象类里有一个ArrayList存放观察者们
+js实现观察者模式（发布订阅者模式）
+发布者改变状态的时候通知订阅者
+Observer模式是行为模式之一，它的作用是当一个对象的状态发生变化时，能够自动通知其他关联对象，自动刷新对象状态。
+Observer模式提供给关联对象一种同步通信的手段，使某个对象与依赖它的其他对象之间保持状态同步。
+Observer模式的角色
+Subject（被观察者）=>就是发布者
+被观察的对象。当需要被观察的状态发生变化时，需要通知队列中所有观察者对象。Subject需要维持（添加，删除，通知）一个观察者对象的队列列表。
+ConcreteSubject
+被观察者的具体实现。包含一些基本的属性状态及其他操作。
+Observer（观察者）
+接口或抽象类。当Subject的状态发生变化时，Observer对象将通过一个callback回调函数得到通知。
+ConcreteObserver
+观察者的具体实现：得到通知后将完成一些具体的业务逻辑处理。
+/**
+ * 发布订阅模式(观察者模式)
+ * handles: 事件处理函数集合
+ * on: 订阅事件
+ * emit: 发布事件
+ * off: 删除事件
+ ×hasOwnProperty()这个对象的方法判断对象是否需含有某个属性，返回值是布尔
+**/
+
+class PubSub {
+  constructor() {
+    this.handles = {};
+  }
+
+  // 订阅事件
+  on(eventType, handle) {
+    if (!this.handles.hasOwnProperty(eventType)) {
+      this.handles[eventType] = [];
+    }
+    if (typeof handle == 'function') {
+      this.handles[eventType].push(handle);
+    } else {
+      throw new Error('缺少回调函数');
+    }
+    return this;
+  }
+
+  // 发布事件
+  emit(eventType, ...args) {
+    if (this.handles.hasOwnProperty(eventType)) {
+      this.handles[eventType].forEach((item, key, arr) => {
+        item.apply(null, args);
+      })
+    } else {
+      throw new Error(`"${eventType}"事件未注册`);
+    }
+    return this;
+  }
+
+  // 删除事件
+  off(eventType, handle) {
+    if (!this.handles.hasOwnProperty(eventType)) {
+      throw new Error(`"${eventType}"事件未注册`);
+    } else if (typeof handle != 'function') {
+      throw new Error('缺少回调函数');
+    } else {
+      this.handles[eventType].forEach((item, key, arr) => {
+        if (item == handle) {
+          arr.splice(key, 1);
+        }
+      })
+    }
+    return this; // 实现链式操作
+  }
+}
+
+// 下面做一些骚操作
+let callback = function () {
+  console.log('you are so nice');
+}
+
+let pubsub = new PubSub();
+pubsub.on('completed', (...args) => {
+  console.log(args.join(' '));
+}).on('completed', callback);
+
+pubsub.emit('completed', 'what', 'a', 'fucking day');
+pubsub.off('completed', callback);
+pubsub.emit('completed', 'fucking', 'again');
+//单例模式
+单例模式：一个类仅有一个实例，这就是单例模式
+js实现单例模式，以及单例模式的应用，单例模式主要用来进行避免重复的生成实例，浪费系统内存，
+原理是，不通过对象来进行一个实例的创建，而是通过一个方法来创建对象的实例
+通过js实现
+Function CreateDiv(html){
+    this.html=html;
+    this.init();
+}
+CreateDiv.prototype.init=function(){
+    var  div=document.createElement('div');
+    div.innerHtml=this.html;
+    document.body.appendChild(div)
+};
+   var   ProxyCreateDiv=(function(){
+       var  instance;
+       return function(html){
+           if(!instance){
+               instance=new CreateDiv(html)
+           }
+           return instance 
+       }
+   })();
+    var  a=new ProxyCreateDiv('sven1');
+    var b=new ProxyCreateDiv('sven2)
+  alert(a===b)//true
+  //单例模式实现的原理用一个方法的属性控制是否创建一个对象的实例，如果这个方法的属性已经存在就直接返回要创建的实例
+  通过es6实现单例模式 单例模式为了避免重复创建相同的实例，浪费系统内存
+  class createDiv{
+      constructor(html){
+          this.html=html
+          this.init()
+      }
+      init(){
+            const div=document.createElement('div');
+            div.innerHtml=this.html;
+            document.body.appendChild(div)  
+      }
+      static ProxyCreateDiv(){
+          let  instance;
+       return function(html){
+           if(!instance){
+               instance=new CreateDiv(html)
+           }
+           return instance 
+       }
+      }
+  }
+let db1=createDiv.ProxyCreateDiv('李豪1')
+let db2=createDiv.ProxyCreateDiv('李豪2')
+alert(db1===db2)
+//true
